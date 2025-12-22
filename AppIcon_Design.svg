@@ -1,0 +1,54 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg_gradient" x1="512" y1="0" x2="512" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34C759"/>
+      <stop offset="1" stop-color="#30B0C7"/>
+    </linearGradient>
+    <!-- macOS Squircle Clip Path (22.37% corner radius) -->
+    <clipPath id="macosClip">
+      <path d="M512 0C236.6 0 112.4 0 56.2 56.2C0 112.4 0 236.6 0 512C0 787.4 0 911.6 56.2 967.8C112.4 1024 236.6 1024 512 1024C787.4 1024 911.6 1024 967.8 967.8C1024 911.6 1024 787.4 1024 512C1024 236.6 1024 112.4 967.8 56.2C911.6 0 787.4 0 512 0Z"/>
+    </clipPath>
+    <filter id="shadow" x="0" y="0" width="1024" height="1024" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="10"/>
+      <feGaussianBlur stdDeviation="15"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+  </defs>
+  
+  <!-- Apply macOS squircle mask -->
+  <g clip-path="url(#macosClip)">
+    <!-- Background -->
+    <rect width="1024" height="1024" fill="url(#bg_gradient)"/>
+    
+    <!-- Content -->
+    <g filter="url(#shadow)">
+      <!-- Outer Ring -->
+      <circle cx="512" cy="512" r="380" stroke="white" stroke-width="60" stroke-opacity="0.25"/>
+      
+      <!-- Progress Ring (75%) -->
+      <path d="M512 132 A380 380 0 1 1 132 512" stroke="white" stroke-width="60" stroke-linecap="round" fill="none"/>
+      
+      <!-- Standing Person -->
+      <g transform="translate(512, 512)">
+        <!-- Head -->
+        <circle cx="0" cy="-160" r="70" fill="white"/>
+        
+        <!-- Body -->
+        <rect x="-40" y="-70" width="80" height="180" rx="40" fill="white"/>
+        
+        <!-- Legs -->
+        <path d="M-20 100 L-50 280" stroke="white" stroke-width="70" stroke-linecap="round"/>
+        <path d="M20 100 L50 280" stroke="white" stroke-width="70" stroke-linecap="round"/>
+        
+        <!-- Arms (Stretching Up) -->
+        <path d="M-40 -40 L-140 -180" stroke="white" stroke-width="70" stroke-linecap="round"/>
+        <path d="M40 -40 L140 -180" stroke="white" stroke-width="70" stroke-linecap="round"/>
+      </g>
+    </g>
+  </g>
+</svg>

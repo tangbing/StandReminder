@@ -1,0 +1,102 @@
+/* 
+  Localizable.strings (English)
+  StandReminder
+*/
+
+// MARK: - App Title
+"app.title" = "Stand Reminder";
+"app.subtitle" = "Stay healthy, move regularly";
+
+// MARK: - Status
+"status.active" = "Active";
+"status.paused" = "Paused";
+"status.enabled" = "Reminder enabled";
+"status.disabled" = "Reminder paused";
+
+// MARK: - Timer
+"timer.next_reminder" = "Next Reminder";
+"timer.interval" = "Interval: ";
+"timer.initializing" = "Initializing...";
+
+// MARK: - Actions
+"action.start_reminder" = "Start Reminder";
+"action.stop_reminder" = "Stop Reminder";
+"action.done" = "Done";
+"action.snooze_5min" = "5 min later";
+"action.save" = "Save";
+"action.cancel" = "Cancel";
+"action.close" = "Close";
+"action.quit" = "Quit";
+
+// MARK: - Time Units
+"time.minutes" = "m";
+"time.minutes_full" = "minutes";
+"time.hours" = "h";
+
+// MARK: - Quick Actions
+"quick_action.settings" = "Settings";
+"quick_action.history" = "History";
+
+// MARK: - Statistics
+"stats.today" = "Today's Stats";
+"stats.reminders" = "Reminders";
+"stats.responses" = "Responses";
+"stats.response_rate" = "Response Rate";
+
+// MARK: - Settings
+"settings.title" = "Settings";
+"settings.language" = "Language";
+"settings.interface_language" = "Interface Language";
+"settings.reminder_interval" = "Reminder Interval";
+"settings.custom_interval" = "Custom interval";
+"settings.select_interval" = "Select Interval";
+"settings.active_hours" = "Active Hours";
+"settings.time_limit" = "Time limit";
+"settings.start" = "Start";
+"settings.end" = "End";
+"settings.time_limit_description" = "Reminders will only be sent during this time";
+"settings.reminder_message" = "Reminder Message";
+"settings.enter_reminder_text" = "Enter reminder text";
+"settings.sound" = "Sound";
+"settings.play_sound" = "Play sound";
+"settings.keyboard_shortcuts" = "Keyboard Shortcuts";
+"settings.shortcut_start_stop" = "Start/Stop";
+"settings.shortcut_pause_resume" = "Pause/Resume";
+
+// MARK: - History
+"history.title" = "Usage History";
+"history.this_week" = "This Week";
+"history.this_month" = "This Month";
+"history.this_year" = "This Year";
+"history.time_period" = "Time Period";
+"history.recent_activity" = "Recent Activity";
+"history.detailed_records" = "Detailed Records";
+"history.activity_trend" = "Activity Trend";
+
+// MARK: - History Actions
+"history.started" = "Started";
+"history.triggered" = "Triggered";
+"history.stopped" = "Stopped";
+"history.started_reminder" = "Started reminder";
+"history.triggered_reminder" = "Reminder triggered";
+"history.responded_reminder" = "Responded to reminder";
+"history.other_action" = "Other action";
+
+// MARK: - Fullscreen Reminder
+"fullscreen.title" = "Time to Stand Up!";
+"fullscreen.default_message" = "Time to stand up and move around!";
+
+// MARK: - Language Names
+"language.english" = "English";
+"language.chinese_simplified" = "简体中文";
+"language.chinese_traditional" = "繁體中文";
+"language.system" = "System";
+"language.restart_hint" = "Restart app to apply language change";
+
+// MARK: - Notifications
+"notification.title" = "Stand Reminder";
+
+// MARK: - Menu Bar
+"menu.open_main" = "Open Main";
+"menu.snooze" = "Snooze";
+"notification.body" = "Time to stand up and move around!";

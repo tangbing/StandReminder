@@ -1,0 +1,57 @@
+<svg width="660" height="400" viewBox="0 0 660 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 渐变背景 -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5F7FA"/>
+      <stop offset="100%" style="stop-color:#E8EDF3"/>
+    </linearGradient>
+    
+    <!-- 箭头渐变 -->
+    <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#667EEA"/>
+      <stop offset="100%" style="stop-color:#764BA2"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景 -->
+  <rect width="660" height="400" fill="url(#bgGradient)"/>
+  
+  <!-- 装饰性圆圈 -->
+  <circle cx="150" cy="140" r="120" fill="#FFFFFF" opacity="0.3"/>
+  <circle cx="510" cy="140" r="120" fill="#FFFFFF" opacity="0.3"/>
+  
+
+  
+  <!-- 中间箭头 -->
+  <g transform="translate(330, 180)">
+    <!-- 箭头主体 -->
+    <path d="M -60,0 L 20,0 L 20,-25 L 60,0 L 20,25 L 20,0 Z" 
+          fill="url(#arrowGradient)" 
+          opacity="0.9"/>
+    
+    <!-- 动感虚线 -->
+    <line x1="-70" y1="-35" x2="30" y2="-35" 
+          stroke="#667EEA" stroke-width="3" stroke-dasharray="8,6" opacity="0.4"/>
+    <line x1="-70" y1="35" x2="30" y2="35" 
+          stroke="#764BA2" stroke-width="3" stroke-dasharray="8,6" opacity="0.4"/>
+  </g>
+  
+
+  
+  <!-- 顶部标题 -->
+  <text x="330" y="50" font-family="SF Pro Display, -apple-system, sans-serif" 
+        font-size="24" fill="#333" text-anchor="middle" font-weight="600">
+    安装 StandReminder
+  </text>
+  
+  <!-- 底部说明文字 -->
+  <text x="330" y="340" font-family="SF Pro Display, -apple-system, sans-serif" 
+        font-size="16" fill="#666" text-anchor="middle">
+    将 StandReminder 拖放到 Applications 文件夹
+  </text>
+  
+  <text x="330" y="365" font-family="PingFang SC, -apple-system, sans-serif" 
+        font-size="14" fill="#999" text-anchor="middle">
+    Drag StandReminder to Applications folder to install
+  </text>
+</svg>

@@ -1,0 +1,102 @@
+/* 
+  Localizable.strings (Simplified Chinese)
+  StandReminder
+*/
+
+// MARK: - App Title
+"app.title" = "站立提醒";
+"app.subtitle" = "保持健康，定时活动";
+
+// MARK: - Status
+"status.active" = "活动中";
+"status.paused" = "已暂停";
+"status.enabled" = "提醒已开启";
+"status.disabled" = "提醒已暂停";
+
+// MARK: - Timer
+"timer.next_reminder" = "下次提醒";
+"timer.interval" = "间隔：";
+"timer.initializing" = "正在初始化...";
+
+// MARK: - Actions
+"action.start_reminder" = "开始提醒";
+"action.stop_reminder" = "停止提醒";
+"action.done" = "已完成";
+"action.snooze_5min" = "5分钟后";
+"action.save" = "保存";
+"action.cancel" = "取消";
+"action.close" = "关闭";
+"action.quit" = "退出";
+
+// MARK: - Time Units
+"time.minutes" = "分钟";
+"time.minutes_full" = "分钟";
+"time.hours" = "小时";
+
+// MARK: - Quick Actions
+"quick_action.settings" = "设置";
+"quick_action.history" = "历史";
+
+// MARK: - Statistics
+"stats.today" = "今日统计";
+"stats.reminders" = "提醒";
+"stats.responses" = "响应";
+"stats.response_rate" = "响应率";
+
+// MARK: - Settings
+"settings.title" = "设置";
+"settings.language" = "语言";
+"settings.interface_language" = "界面语言";
+"settings.reminder_interval" = "提醒间隔";
+"settings.custom_interval" = "自定义间隔";
+"settings.select_interval" = "选择间隔";
+"settings.active_hours" = "活跃时间";
+"settings.time_limit" = "限制时间段";
+"settings.start" = "开始";
+"settings.end" = "结束";
+"settings.time_limit_description" = "只在此时间段内发送提醒";
+"settings.reminder_message" = "提醒内容";
+"settings.enter_reminder_text" = "输入提醒文字";
+"settings.sound" = "声音";
+"settings.play_sound" = "播放提醒声音";
+"settings.keyboard_shortcuts" = "快捷键";
+"settings.shortcut_start_stop" = "开始/停止提醒";
+"settings.shortcut_pause_resume" = "暂停/恢复";
+
+// MARK: - History
+"history.title" = "使用历史";
+"history.this_week" = "本周";
+"history.this_month" = "本月";
+"history.this_year" = "本年";
+"history.time_period" = "时间段";
+"history.recent_activity" = "最近活动";
+"history.detailed_records" = "详细记录";
+"history.activity_trend" = "活动趋势";
+
+// MARK: - History Actions
+"history.started" = "开始";
+"history.triggered" = "提醒触发";
+"history.stopped" = "停止";
+"history.started_reminder" = "开始提醒";
+"history.triggered_reminder" = "触发提醒";
+"history.responded_reminder" = "响应提醒";
+"history.other_action" = "其他操作";
+
+// MARK: - Fullscreen Reminder
+"fullscreen.title" = "该起来活动了";
+"fullscreen.default_message" = "该起来活动一下啦！";
+
+// MARK: - Language Names
+"language.english" = "English";
+"language.chinese_simplified" = "简体中文";
+"language.chinese_traditional" = "繁體中文";
+"language.system" = "跟随系统";
+"language.restart_hint" = "重启应用后生效";
+
+// MARK: - Notifications
+"notification.title" = "站立提醒";
+
+// MARK: - Menu Bar
+"menu.open_main" = "打开主界面";
+"menu.snooze" = "稍后提醒";
+"notification.body" = "该起来活动一下啦！";
