@@ -2,7 +2,6 @@ import SwiftUI
 
 struct FullscreenReminderView: View {
     @EnvironmentObject var reminderManager: ReminderManager
-    let onDismiss: () -> Void
     
     var body: some View {
         ZStack {
@@ -26,10 +25,14 @@ struct FullscreenReminderView: View {
                 
                 // 图标
                 ZStack {
-                    Circle()
-                        .fill(.ultraThinMaterial)
+                    Color.clear
                         .frame(width: 140, height: 140)
-                        .shadow(color: .blue.opacity(0.3), radius: 20)
+                        .glassSurface(
+                            shadowColor: .blue.opacity(0.3),
+                            shadowRadius: 20,
+                            shadowY: 0,
+                            in: Circle()
+                        )
                     
                     Image(systemName: "figure.stand")
                         .font(.system(size: 70, weight: .thin))
@@ -42,62 +45,36 @@ struct FullscreenReminderView: View {
                 VStack(spacing: 16) {
                     Text(LocalizationKeys.fullscreenTitle.localized)
                         .font(.system(size: 38, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                     
-                    Text(reminderManager.customMessage)
+                    // 提醒内容不做国际化：为空则显示固定默认值
+                    Text(reminderManager.customMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "站立一下" : reminderManager.customMessage)
                         .font(.system(size: 18))
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundStyle(.white.opacity(0.8))
                         .multilineTextAlignment(.center)
+                    
+                    Text("\(LocalizationKeys.fullscreenRestCountdown.localized)\(reminderManager.formatTimeInterval(reminderManager.restTimeRemaining))")
+                        .font(.system(size: 16, weight: .medium))
+                        .monospacedDigit()
+                        .foregroundStyle(.white.opacity(0.75))
                 }
                 .padding(.horizontal, 40)
                 
                 Spacer()
                 
                 // 按钮
-                HStack(spacing: 20) {
-                    GlassActionButton(
-                        icon: "checkmark.circle.fill",
-                        label: LocalizationKeys.actionDone.localized,
-                        gradient: [.green, .cyan]
-                    ) {
-                        markAsResponded()
-                        onDismiss()
-                    }
-                    
-                    GlassActionButton(
-                        icon: "moon.zzz.fill",
-                        label: LocalizationKeys.actionSnooze5Min.localized,
-                        gradient: [.orange, .yellow]
-                    ) {
-                        reminderManager.pendingSnooze = true
-                        reminderManager.snoozeReminder(minutes: 5)
-                        onDismiss()
-                    }
+                GlassActionButton(
+                    icon: "forward.end.fill",
+                    label: LocalizationKeys.actionSkipRest.localized,
+                    gradient: [.orange, .pink],
+                    width: 220
+                ) {
+                    reminderManager.skipRest()
                 }
                 .padding(.bottom, 50)
             }
             
-            // 关闭按钮
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.white.opacity(0.6))
-                    }
-                    .buttonStyle(.plain)
-                    .padding(28)
-                }
-                Spacer()
-            }
         }
-    }
-    
-    private func markAsResponded() {
-        let record = ReminderRecord(date: Date(), responded: true)
-        reminderManager.reminderHistory.append(record)
-        reminderManager.saveHistory()
     }
 }
 
@@ -105,6 +82,8 @@ struct GlassActionButton: View {
     let icon: String
     let label: String
     let gradient: [Color]
+    var width: CGFloat = 130
+    var height: CGFloat = 90
     let action: () -> Void
     
     var body: some View {
@@ -116,8 +95,8 @@ struct GlassActionButton: View {
                 Text(label)
                     .font(.system(size: 15, weight: .semibold))
             }
-            .foregroundColor(.white)
-            .frame(width: 130, height: 90)
+            .foregroundStyle(.white)
+            .frame(width: width, height: height)
             .background(
                 LinearGradient(colors: gradient, startPoint: .topLeading, endPoint: .bottomTrailing),
                 in: RoundedRectangle(cornerRadius: 20, style: .continuous)
@@ -129,6 +108,6 @@ struct GlassActionButton: View {
 }
 
 #Preview {
-    FullscreenReminderView(onDismiss: {})
+    FullscreenReminderView()
         .environmentObject(ReminderManager())
 }

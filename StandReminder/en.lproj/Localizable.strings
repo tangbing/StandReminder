@@ -27,6 +27,7 @@
 "action.cancel" = "Cancel";
 "action.close" = "Close";
 "action.quit" = "Quit";
+"action.skip_rest" = "Skip rest";
 
 // MARK: - Time Units
 "time.minutes" = "m";
@@ -50,6 +51,7 @@
 "settings.reminder_interval" = "Reminder Interval";
 "settings.custom_interval" = "Custom interval";
 "settings.select_interval" = "Select Interval";
+"settings.rest_time" = "Rest time";
 "settings.active_hours" = "Active Hours";
 "settings.time_limit" = "Time limit";
 "settings.start" = "Start";
@@ -81,10 +83,12 @@
 "history.triggered_reminder" = "Reminder triggered";
 "history.responded_reminder" = "Responded to reminder";
 "history.other_action" = "Other action";
+"history.rested" = "Rested";
 
 // MARK: - Fullscreen Reminder
 "fullscreen.title" = "Time to Stand Up!";
 "fullscreen.default_message" = "Time to stand up and move around!";
+"fullscreen.rest_countdown" = "Rest: ";
 
 // MARK: - Language Names
 "language.english" = "English";

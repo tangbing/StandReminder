@@ -27,6 +27,7 @@
 "action.cancel" = "取消";
 "action.close" = "關閉";
 "action.quit" = "退出";
+"action.skip_rest" = "略過休息";
 
 // MARK: - Time Units
 "time.minutes" = "分鐘";
@@ -50,6 +51,7 @@
 "settings.reminder_interval" = "提醒間隔";
 "settings.custom_interval" = "自定義間隔";
 "settings.select_interval" = "選擇間隔";
+"settings.rest_time" = "休息時間";
 "settings.active_hours" = "活躍時間";
 "settings.time_limit" = "限制時間段";
 "settings.start" = "開始";
@@ -81,10 +83,12 @@
 "history.triggered_reminder" = "觸發提醒";
 "history.responded_reminder" = "響應提醒";
 "history.other_action" = "其他操作";
+"history.rested" = "休息";
 
 // MARK: - Fullscreen Reminder
 "fullscreen.title" = "該起來活動了";
 "fullscreen.default_message" = "該起來活動一下啦！";
+"fullscreen.rest_countdown" = "休息倒計時：";
 
 // MARK: - Language Names
 "language.english" = "English";

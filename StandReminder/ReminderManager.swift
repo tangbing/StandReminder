@@ -22,11 +22,15 @@ enum AppLanguage: String, CaseIterable {
     }
 }
 
+@MainActor
 class ReminderManager: ObservableObject {
     @Published var isActive = false
     @Published var timeRemaining: TimeInterval = 0
     @Published var selectedInterval: TimeInterval = 30 * 60
-    @Published var customMessage = "该起来活动一下啦！"
+    @Published var restDurationMinutes: Int = 15
+    @Published var restTimeRemaining: TimeInterval = 0
+    // 自定义提醒文案：不做国际化，用户输入即所见
+    @Published var customMessage = "站立一下"
     @Published var activeStartTime = Calendar.current.date(from: DateComponents(hour: 9, minute: 0)) ?? Date()
     @Published var activeEndTime = Calendar.current.date(from: DateComponents(hour: 18, minute: 0)) ?? Date()
     @Published var enableActiveTimeLimit = true
@@ -43,6 +47,15 @@ class ReminderManager: ObservableObject {
     // let fullscreenWindowManager = FullscreenWindowManager()
     private var timer: Timer?
     private var nextReminderTime: Date?
+    private var restStartedAt: Date?
+    private var restPlannedSeconds: Int = 0
+    
+    private enum CountdownPhase {
+        case interval
+        case rest
+    }
+    
+    private var countdownPhase: CountdownPhase = .interval
 
     enum Language: String, CaseIterable {
         case chineseSimplified = "zh-Hans"
@@ -72,6 +85,7 @@ class ReminderManager: ObservableObject {
         applyLanguage()
         print("✅ ReminderManager 初始化完成")
         print("⏰ 当前间隔: \(useCustomInterval ? customIntervalMinutes : Int(selectedInterval/60)) 分钟")
+        print("🛌 休息时间: \(restDurationMinutes) 分钟")
     }
     
     func startReminder() {
@@ -92,6 +106,16 @@ class ReminderManager: ObservableObject {
         timer?.invalidate()
         timer = nil
         timeRemaining = 0
+        restTimeRemaining = 0
+        countdownPhase = .interval
+        restStartedAt = nil
+        restPlannedSeconds = 0
+        
+        if showingFullscreenReminder {
+            showingFullscreenReminder = false
+            fullscreenWindow?.close()
+            fullscreenWindow = nil
+        }
         
         // 取消所有待发送的通知
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
@@ -153,6 +177,8 @@ class ReminderManager: ObservableObject {
         
         nextReminderTime = nextTime
         timeRemaining = nextTime.timeIntervalSince(now)
+        countdownPhase = .interval
+        restTimeRemaining = 0
         
         print("⏰ 下次提醒时间: \(nextTime)")
         print("⏱️ 倒计时: \(formatTimeInterval(timeRemaining))")
@@ -173,7 +199,8 @@ class ReminderManager: ObservableObject {
     private func scheduleNotification(at date: Date) {
         let content = UNMutableNotificationContent()
         content.title = LocalizationKeys.notificationTitle.localized
-        content.body = customMessage.isEmpty ? LocalizationKeys.notificationBody.localized : customMessage
+        // 提醒内容不做国际化：为空则使用固定默认值
+        content.body = customMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "站立一下" : customMessage
         content.categoryIdentifier = "STAND_REMINDER"
         
         if enableSound {
@@ -181,7 +208,7 @@ class ReminderManager: ObservableObject {
             content.sound = .default
         }
         
-        let timeInterval = date.timeIntervalSinceNow
+        let timeInterval = max(1, date.timeIntervalSinceNow)
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: timeInterval, repeats: false)
         
         let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
@@ -196,18 +223,34 @@ class ReminderManager: ObservableObject {
     private func startCountdownTimer() {
         timer?.invalidate()
         print("⏲️ 启动倒计时定时器")
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            DispatchQueue.main.async {
-                guard let self = self else { return }
-                if self.timeRemaining > 0 {
-                    self.timeRemaining -= 1
-                    // 每30秒打印一次调试信息
-                    if Int(self.timeRemaining) % 30 == 0 {
-                        print("⏰ 剩余时间: \(self.formatTimeInterval(self.timeRemaining))")
-                    }
-                } else {
-                    self.handleReminderTriggered()
+        let newTimer = Timer(timeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            Task { @MainActor in
+                self.handleTimerTick()
+            }
+        }
+        RunLoop.main.add(newTimer, forMode: .common)
+        timer = newTimer
+    }
+    
+    private func handleTimerTick() {
+        guard isActive else { return }
+        switch countdownPhase {
+        case .interval:
+            if timeRemaining > 0 {
+                timeRemaining = max(0, timeRemaining - 1)
+                // 每30秒打印一次调试信息
+                if Int(timeRemaining) % 30 == 0 {
+                    print("⏰ 剩余时间: \(formatTimeInterval(timeRemaining))")
                 }
+            } else {
+                handleReminderTriggered()
+            }
+        case .rest:
+            if restTimeRemaining > 0 {
+                restTimeRemaining = max(0, restTimeRemaining - 1)
+            } else {
+                handleRestFinished()
             }
         }
     }
@@ -226,15 +269,26 @@ class ReminderManager: ObservableObject {
         saveHistory()
         
         // 显示全屏提醒
-        DispatchQueue.main.async {
-            self.showingFullscreenReminder = true
-            // self.fullscreenWindowManager.showFullscreenReminder(reminderManager: self)
-            // 临时使用简单的窗口显示
-            self.showSimpleFullscreenReminder()
-        }
-        
-        // 停止当前计时器，等待用户操作后再重置
-        timer?.invalidate()
+        showingFullscreenReminder = true
+        // self.fullscreenWindowManager.showFullscreenReminder(reminderManager: self)
+        // 临时使用简单的窗口显示
+        showSimpleFullscreenReminder()
+        startRestCountdown()
+    }
+
+    private func startRestCountdown() {
+        let clampedMinutes = max(1, restDurationMinutes)
+        let plannedSeconds = clampedMinutes * 60
+        restPlannedSeconds = plannedSeconds
+        restStartedAt = Date()
+        restTimeRemaining = TimeInterval(plannedSeconds)
+        countdownPhase = .rest
+        startCountdownTimer()
+    }
+    
+    private func handleRestFinished() {
+        print("✅ 休息时间结束 - 自动关闭提醒并继续计时")
+        completeReminder(restSecondsUsed: restPlannedSeconds)
     }
     
     private func showSimpleFullscreenReminder() {
@@ -267,10 +321,8 @@ class ReminderManager: ObservableObject {
         
         fullscreenWindow = window
         
-        let contentView = FullscreenReminderView { [weak self] in
-            self?.dismissFullscreenReminder()
-        }
-        .environmentObject(self)
+        let contentView = FullscreenReminderView()
+            .environmentObject(self)
         
         window.contentView = NSHostingView(rootView: contentView)
         window.orderFrontRegardless() // 非模态显示，不抢占焦点
@@ -293,6 +345,33 @@ class ReminderManager: ObservableObject {
         }
         // 重新激活 accessory 模式，避免界面卡住
         NSApp.setActivationPolicy(.accessory)
+    }
+    
+    func skipRest() {
+        print("⏭️ 用户略过休息 - 关闭提醒并继续计时")
+        let restSecondsUsed = currentRestSecondsUsed()
+        timer?.invalidate()
+        timer = nil
+        restTimeRemaining = 0
+        countdownPhase = .interval
+        completeReminder(restSecondsUsed: restSecondsUsed)
+    }
+    
+    private func currentRestSecondsUsed() -> Int {
+        guard let restStartedAt else { return 0 }
+        let elapsed = Date().timeIntervalSince(restStartedAt)
+        let clamped = max(0, min(elapsed, TimeInterval(restPlannedSeconds)))
+        return Int(clamped.rounded(.down))
+    }
+    
+    private func completeReminder(restSecondsUsed: Int) {
+        let record = ReminderRecord(date: Date(), responded: true, restSecondsUsed: restSecondsUsed)
+        reminderHistory.append(record)
+        saveHistory()
+        
+        restStartedAt = nil
+        restPlannedSeconds = 0
+        dismissFullscreenReminder()
     }
     
     func snoozeReminder(minutes: Int) {
@@ -341,6 +420,7 @@ class ReminderManager: ObservableObject {
     // MARK: - Settings Persistence
     private func saveSettings() {
         UserDefaults.standard.set(selectedInterval, forKey: "selectedInterval")
+        UserDefaults.standard.set(restDurationMinutes, forKey: "restDurationMinutes")
         UserDefaults.standard.set(customMessage, forKey: "customMessage")
         UserDefaults.standard.set(activeStartTime, forKey: "activeStartTime")
         UserDefaults.standard.set(activeEndTime, forKey: "activeEndTime")
@@ -353,7 +433,13 @@ class ReminderManager: ObservableObject {
     
     private func loadSettings() {
         selectedInterval = UserDefaults.standard.object(forKey: "selectedInterval") as? TimeInterval ?? 30 * 60
-        customMessage = UserDefaults.standard.string(forKey: "customMessage") ?? LocalizationKeys.fullscreenDefaultMessage.localized
+        restDurationMinutes = UserDefaults.standard.object(forKey: "restDurationMinutes") as? Int ?? 15
+        if let saved = UserDefaults.standard.string(forKey: "customMessage") {
+            // 迁移历史数据：若为旧版的键名或任一语言默认文案，统一替换为固定默认文案
+            customMessage = migrateToPlainIfNeeded(saved)
+        } else {
+            customMessage = "站立一下"
+        }
         
         // 安全地创建默认时间
         activeStartTime = UserDefaults.standard.object(forKey: "activeStartTime") as? Date ?? {
@@ -415,6 +501,15 @@ class ReminderManager: ObservableObject {
             startReminder()
         }
     }
+    
+    func persistSettingsAndRescheduleIfNeeded() {
+        saveSettings()
+        
+        if isActive {
+            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+            scheduleNextReminder()
+        }
+    }
 
     func applyLanguage() {
         UserDefaults.standard.set(selectedLanguage.rawValue, forKey: "selectedLanguageCode")
@@ -443,6 +538,26 @@ class ReminderManager: ObservableObject {
         
         return (reminders, responses)
     }
+
+    // 兼容旧数据：若保存的是历史的键名或默认文案（任一语言），统一为固定默认文案“站立一下”
+    private func migrateToPlainIfNeeded(_ value: String) -> String {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "站立一下" }
+
+        let knownDefaults: Set<String> = [
+            "fullscreen.default_message",
+            LocalizationKeys.fullscreenDefaultMessage.localized,
+            LocalizationKeys.fullscreenDefaultMessage.localizedFor("en"),
+            LocalizationKeys.fullscreenDefaultMessage.localizedFor("zh-Hans"),
+            LocalizationKeys.fullscreenDefaultMessage.localizedFor("zh-Hant"),
+            LocalizationKeys.notificationBody.localized,
+            LocalizationKeys.notificationBody.localizedFor("en"),
+            LocalizationKeys.notificationBody.localizedFor("zh-Hans"),
+            LocalizationKeys.notificationBody.localizedFor("zh-Hant")
+        ]
+        if knownDefaults.contains(trimmed) { return "站立一下" }
+        return trimmed
+    }
 }
 
 struct ReminderRecord: Codable, Identifiable {
@@ -451,11 +566,13 @@ struct ReminderRecord: Codable, Identifiable {
     let started: Bool
     let triggered: Bool
     let responded: Bool
+    let restSecondsUsed: Int?
     
-    init(date: Date, started: Bool = false, triggered: Bool = false, responded: Bool = false) {
+    init(date: Date, started: Bool = false, triggered: Bool = false, responded: Bool = false, restSecondsUsed: Int? = nil) {
         self.date = date
         self.started = started
         self.triggered = triggered
         self.responded = responded
+        self.restSecondsUsed = restSecondsUsed
     }
 }

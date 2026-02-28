@@ -36,25 +36,29 @@ struct StandReminderApp: App {
         }
         
         MenuBarExtra(content: {
-            MenuBarView()
+            // 使用菜单样式的轻量内容，避免出现带标题栏的窗口
+            MenuBarMenuView()
                 .environmentObject(reminderManager)
-                .id(reminderManager.selectedLanguage) // 强制刷新内容视图
+                .id(reminderManager.selectedLanguage)
         }, label: {
-            // 建立对 selectedLanguage 的依赖，确保语言变更时 Label 重绘
-            let _ = reminderManager.selectedLanguage
-            let title = LocalizationKeys.appTitle.localized
-            Label(title, systemImage: "figure.stand")
-                .environment(\.locale, .current)
+            // 仅显示图标，避免在菜单栏占用过多空间
+            Image(systemName: "figure.stand")
+                .help(LocalizationKeys.appTitle.localized)
         })
-        .menuBarExtraStyle(.window)
+        .menuBarExtraStyle(.menu)
     }
     
     private func requestNotificationPermission() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            if granted {
-                print("✅ 通知权限已授权")
-            } else {
-                print("❌ 通知权限被拒绝")
+        Task {
+            do {
+                let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
+                if granted {
+                    print("✅ 通知权限已授权")
+                } else {
+                    print("❌ 通知权限被拒绝")
+                }
+            } catch {
+                print("❌ 通知权限请求失败: \(error)")
             }
         }
     }

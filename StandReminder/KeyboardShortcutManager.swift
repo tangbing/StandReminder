@@ -16,9 +16,8 @@ class KeyboardShortcutManager {
     
     // 这些方法可以被应用内的按钮调用
     func toggleReminder() {
-        guard let reminderManager = reminderManager else { return }
-        
-        DispatchQueue.main.async {
+        Task { @MainActor [weak self] in
+            guard let reminderManager = self?.reminderManager else { return }
             if reminderManager.isActive {
                 reminderManager.stopReminder()
             } else {
@@ -28,9 +27,8 @@ class KeyboardShortcutManager {
     }
     
     func pauseResumeReminder() {
-        guard let reminderManager = reminderManager else { return }
-        
-        DispatchQueue.main.async {
+        Task { @MainActor [weak self] in
+            guard let reminderManager = self?.reminderManager else { return }
             if reminderManager.isActive {
                 reminderManager.stopReminder()
             } else {

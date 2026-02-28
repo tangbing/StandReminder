@@ -27,6 +27,7 @@ enum LocalizationKeys: String {
     case actionCancel = "action.cancel"
     case actionClose = "action.close"
     case actionQuit = "action.quit"
+    case actionSkipRest = "action.skip_rest"
     
     // MARK: - Time Units
     case timeMinutes = "time.minutes"
@@ -50,6 +51,7 @@ enum LocalizationKeys: String {
     case settingsReminderInterval = "settings.reminder_interval"
     case settingsCustomInterval = "settings.custom_interval"
     case settingsSelectInterval = "settings.select_interval"
+    case settingsRestTime = "settings.rest_time"
     case settingsActiveHours = "settings.active_hours"
     case settingsTimeLimit = "settings.time_limit"
     case settingsStart = "settings.start"
@@ -81,10 +83,12 @@ enum LocalizationKeys: String {
     case historyTriggeredReminder = "history.triggered_reminder"
     case historyRespondedReminder = "history.responded_reminder"
     case historyOtherAction = "history.other_action"
+    case historyRested = "history.rested"
     
     // MARK: - Fullscreen Reminder
     case fullscreenTitle = "fullscreen.title"
     case fullscreenDefaultMessage = "fullscreen.default_message"
+    case fullscreenRestCountdown = "fullscreen.rest_countdown"
     
     // MARK: - Language Names
     case languageEnglish = "language.english"
@@ -158,6 +162,29 @@ enum LocalizationKeys: String {
         }
         
         // Fallback to system default
+        return NSLocalizedString(self.rawValue, comment: "")
+    }
+
+    // 获取指定语言代码的本地化文本（不依赖当前选择语言）。
+    // 例如：key.localizedFor("zh-Hant")。
+    func localizedFor(_ languageCode: String) -> String {
+        var searchLangs: [String] = [languageCode]
+        if languageCode == "zh-Hant" {
+            searchLangs.append(contentsOf: ["zh_Hant", "zh-TW", "zh_TW", "zh-HK", "zh_HK"])
+        } else if languageCode == "zh-Hans" {
+            searchLangs.append(contentsOf: ["zh_Hans", "zh-CN", "zh_CN"])
+        }
+        for lang in searchLangs {
+            if let path = Bundle.main.path(forResource: lang, ofType: "lproj"),
+               let bundle = Bundle(path: path) {
+                return NSLocalizedString(self.rawValue, tableName: nil, bundle: bundle, value: self.rawValue, comment: "")
+            }
+        }
+        let alt = languageCode.replacingOccurrences(of: "-", with: "_")
+        if let path = Bundle.main.path(forResource: alt, ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            return NSLocalizedString(self.rawValue, tableName: nil, bundle: bundle, value: self.rawValue, comment: "")
+        }
         return NSLocalizedString(self.rawValue, comment: "")
     }
     

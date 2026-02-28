@@ -84,29 +84,20 @@ struct GradientBackground: View {
     }
 }
 
-// MARK: - Glass 效果兼容扩展
-extension View {
-    @ViewBuilder
-    func glassBackground(cornerRadius: CGFloat = 16) -> some View {
-        self
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
-            )
-    }
-}
-
 struct HeaderView: View {
     @EnvironmentObject var reminderManager: ReminderManager
     
     var body: some View {
         VStack(spacing: 10) {
             ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
+                Color.clear
                     .frame(width: 80, height: 80)
-                    .shadow(color: .blue.opacity(0.2), radius: 10)
+                    .glassSurface(
+                        shadowColor: .blue.opacity(0.2),
+                        shadowRadius: 10,
+                        shadowY: 0,
+                        in: Circle()
+                    )
                 
                 Image(systemName: "figure.stand")
                     .font(.system(size: 38, weight: .light))
@@ -157,7 +148,7 @@ struct TimerView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            .background(Capsule().fill(.ultraThinMaterial))
+            .glassCapsule()
             
             // 倒计时
             if reminderManager.isActive {
@@ -228,7 +219,7 @@ struct ControlButtonsView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
                 .background(
                     LinearGradient(
                         colors: reminderManager.isActive ? 
@@ -254,9 +245,10 @@ struct ControlButtonsView: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 38)
                                 .foregroundStyle(.orange)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .fill(.ultraThinMaterial)
+                                .glassSurface(
+                                    interactive: true,
+                                    shadow: false,
+                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
                                 )
                         }
                         .buttonStyle(.plain)
@@ -346,9 +338,10 @@ struct ActionButton: View {
             .foregroundStyle(color)
             .frame(maxWidth: .infinity)
             .frame(height: 65)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(.ultraThinMaterial)
+            .glassSurface(
+                interactive: true,
+                shadow: false,
+                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
             )
         }
         .buttonStyle(.plain)

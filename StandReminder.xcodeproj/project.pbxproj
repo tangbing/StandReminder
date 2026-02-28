@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		A1000001292345670089ABCD /* StandReminderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000292345670089ABCD /* StandReminderApp.swift */; };
 		A1000003292345670089ABCD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002292345670089ABCD /* ContentView.swift */; };
+		A100003729234700089ABCD /* GlassSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100003629234700089ABCD /* GlassSurface.swift */; };
 		A1000005292345680089ABCD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000004292345680089ABCD /* Assets.xcassets */; };
 		A1000008292345680089ABCD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000007292345680089ABCD /* Preview Assets.xcassets */; };
 		A1000010292345A80089ABCD /* ReminderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100000F292345A80089ABCD /* ReminderManager.swift */; };
@@ -21,12 +22,14 @@
 		A1000020292346180089ABCD /* LocalizationKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001D292346180089ABCD /* LocalizationKeys.swift */; };
 		A1000021292346280089ABCD /* SafeContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A100001E292346280089ABCD /* SafeContentView.swift */; };
 		A1000030292346380089ABCD /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A1000032292346380089ABCD /* Localizable.strings */; };
+        A20001012999999900AABBCC /* MenuBarMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20001002999999900AABBCC /* MenuBarMenuView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A0FFFFFD292345670089ABCD /* StandReminder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StandReminder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000000292345670089ABCD /* StandReminderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandReminderApp.swift; sourceTree = "<group>"; };
 		A1000002292345670089ABCD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A100003629234700089ABCD /* GlassSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassSurface.swift; sourceTree = "<group>"; };
 		A1000004292345680089ABCD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1000007292345680089ABCD /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		A1000009292345680089ABCD /* StandReminder.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StandReminder.entitlements; sourceTree = "<group>"; };
@@ -43,6 +46,7 @@
 		A1000033292346380089ABCD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A1000034292346380089ABCD /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		A1000035292346380089ABCD /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+        A20001002999999900AABBCC /* MenuBarMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarMenuView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +82,8 @@
 				A100001F29234608089ABCD /* Info.plist */,
 				A1000000292345670089ABCD /* StandReminderApp.swift */,
 				A1000002292345670089ABCD /* ContentView.swift */,
+				A100003629234700089ABCD /* GlassSurface.swift */,
+				A20001002999999900AABBCC /* MenuBarMenuView.swift */,
 				A100001B29234608089ABCD /* FullscreenReminderView.swift */,
 				A100000F292345A80089ABCD /* ReminderManager.swift */,
 				A1000011292345B80089ABCD /* SettingsView.swift */,
@@ -177,11 +183,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000003292345670089ABCD /* ContentView.swift in Sources */,
+				A100003729234700089ABCD /* GlassSurface.swift in Sources */,
 				A100001C29234608089ABCD /* FullscreenReminderView.swift in Sources */,
 				A1000010292345A80089ABCD /* ReminderManager.swift in Sources */,
 				A1000012292345B80089ABCD /* SettingsView.swift in Sources */,
 				A1000014292345C80089ABCD /* HistoryView.swift in Sources */,
 				A1000016292345D80089ABCD /* MenuBarView.swift in Sources */,
+				A20001012999999900AABBCC /* MenuBarMenuView.swift in Sources */,
 				A1000018292345E80089ABCD /* KeyboardShortcutManager.swift in Sources */,
 				A100001A292345F80089ABCD /* HealthKitManager.swift in Sources */,
 				A1000020292346180089ABCD /* LocalizationKeys.swift in Sources */,

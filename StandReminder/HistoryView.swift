@@ -43,7 +43,7 @@ struct HistoryView: View {
                                 LinearGradient(colors: [.green, .cyan], startPoint: .leading, endPoint: .trailing),
                                 in: Capsule()
                             )
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                     }
                     .buttonStyle(.plain)
                 }
@@ -139,10 +139,10 @@ struct GlassStatCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
+        .glassSurface(
+            shadowColor: Color.black.opacity(0.06),
+            shadowRadius: 8,
+            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
         )
     }
 }
@@ -179,7 +179,7 @@ struct GlassHistoryListView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .background(Capsule().fill(.ultraThinMaterial))
+                    .glassCapsule()
             }
             .padding(.horizontal, 20)
             
@@ -207,21 +207,36 @@ struct GlassHistoryRow: View {
     let record: ReminderRecord
     
     private var iconName: String {
+        if record.responded { return "bed.double.fill" }
         if record.started { return "play.circle.fill" }
         if record.triggered { return "bell.badge.fill" }
         return "stop.circle.fill"
     }
     
     private var iconColor: Color {
+        if record.responded { return .orange }
         if record.started { return .green }
         if record.triggered { return .blue }
         return .red
     }
     
     private var actionText: String {
+        if record.responded {
+            if let seconds = record.restSecondsUsed {
+                return "\(LocalizationKeys.historyRested.localized) \(formatMMSS(seconds))"
+            }
+            return LocalizationKeys.historyRested.localized
+        }
         if record.started { return LocalizationKeys.historyStarted.localized }
         if record.triggered { return LocalizationKeys.historyTriggered.localized }
         return LocalizationKeys.historyStopped.localized
+    }
+    
+    private func formatMMSS(_ totalSeconds: Int) -> String {
+        let clamped = max(0, totalSeconds)
+        let minutes = clamped / 60
+        let seconds = clamped % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
     
     var body: some View {
@@ -244,10 +259,11 @@ struct GlassHistoryRow: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
+        .glassSurface(
+            shadowColor: Color.black.opacity(0.04),
+            shadowRadius: 4,
+            shadowY: 2,
+            in: RoundedRectangle(cornerRadius: 10, style: .continuous)
         )
     }
 }

@@ -21,10 +21,7 @@ struct MenuBarView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            )
+            .glassBackground(cornerRadius: 10, shadow: false)
             
             // 倒计时
             if reminderManager.isActive {
@@ -45,10 +42,7 @@ struct MenuBarView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                )
+                .glassBackground(cornerRadius: 10, shadow: false)
             }
             
             Divider().padding(.vertical, 2)
@@ -103,10 +97,7 @@ struct MenuBarView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            )
+            .glassBackground(cornerRadius: 10, shadow: false)
             
             Divider().padding(.vertical, 2)
             

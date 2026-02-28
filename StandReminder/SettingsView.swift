@@ -12,17 +12,19 @@ struct SettingsView: View {
     @State private var tempEnableActiveTimeLimit: Bool
     @State private var tempCustomIntervalMinutes: Int
     @State private var tempUseCustomInterval: Bool
+    @State private var tempRestDurationMinutes: Int
     @State private var tempLanguage: AppLanguage
     
     init() {
         _tempInterval = State(initialValue: 20 * 60)
-        _tempMessage = State(initialValue: LocalizationKeys.fullscreenDefaultMessage.localized)
+        _tempMessage = State(initialValue: "站立一下")
         _tempStartTime = State(initialValue: Calendar.current.date(from: DateComponents(hour: 9, minute: 0)) ?? Date())
         _tempEndTime = State(initialValue: Calendar.current.date(from: DateComponents(hour: 18, minute: 0)) ?? Date())
         _tempEnableSound = State(initialValue: true)
         _tempEnableActiveTimeLimit = State(initialValue: false)
         _tempCustomIntervalMinutes = State(initialValue: 20)
         _tempUseCustomInterval = State(initialValue: false)
+        _tempRestDurationMinutes = State(initialValue: 15)
         _tempLanguage = State(initialValue: .system)
     }
     
@@ -62,7 +64,7 @@ struct SettingsView: View {
                                     LinearGradient(colors: [.blue, .cyan], startPoint: .leading, endPoint: .trailing),
                                     in: Capsule()
                                 )
-                                .foregroundColor(.white)
+                                .foregroundStyle(.white)
                         }
                         .buttonStyle(.plain)
                     }
@@ -95,13 +97,30 @@ struct SettingsView: View {
                                             .foregroundStyle(.secondary)
                                     }
                                 } else {
-                                    Picker(LocalizationKeys.settingsSelectInterval.localized, selection: $tempInterval) {
+                                    Picker(selection: $tempInterval) {
                                         ForEach(reminderManager.intervalOptions, id: \.self) { interval in
                                             Text(reminderManager.formatIntervalOption(interval)).tag(interval)
                                         }
+                                    } label: {
+                                        Text(LocalizationKeys.settingsSelectInterval.localized)
                                     }
                                     .pickerStyle(.menu)
                                     .labelsHidden()
+                                }
+                                
+                                Divider().opacity(0.6)
+                                
+                                HStack(spacing: 8) {
+                                    Text(LocalizationKeys.settingsRestTime.localized)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text("\(tempRestDurationMinutes) \(LocalizationKeys.timeMinutesFull.localized)")
+                                        .font(.subheadline)
+                                        .monospacedDigit()
+                                    
+                                    Stepper("", value: $tempRestDurationMinutes, in: 1...120, step: 1)
+                                        .labelsHidden()
                                 }
                             }
                         }
@@ -159,7 +178,7 @@ struct SettingsView: View {
                             color: .indigo
                         ) {
                             VStack(alignment: .leading, spacing: 8) {
-                                Picker(LocalizationKeys.settingsInterfaceLanguage.localized, selection: Binding(
+                                Picker(selection: Binding(
                                     get: { reminderManager.selectedLanguage },
                                     set: { newValue in
                                         reminderManager.setLanguage(newValue)
@@ -168,6 +187,8 @@ struct SettingsView: View {
                                     ForEach(AppLanguage.allCases, id: \.self) { lang in
                                         Text(lang.displayName).tag(lang)
                                     }
+                                } label: {
+                                    Text(LocalizationKeys.settingsInterfaceLanguage.localized)
                                 }
                                 .pickerStyle(.menu)
                                 
@@ -202,6 +223,7 @@ struct SettingsView: View {
     
     private func loadCurrentSettings() {
         tempInterval = reminderManager.selectedInterval
+        // 显示为原样字符串
         tempMessage = reminderManager.customMessage
         tempStartTime = reminderManager.activeStartTime
         tempEndTime = reminderManager.activeEndTime
@@ -209,20 +231,25 @@ struct SettingsView: View {
         tempEnableActiveTimeLimit = reminderManager.enableActiveTimeLimit
         tempCustomIntervalMinutes = reminderManager.customIntervalMinutes
         tempUseCustomInterval = reminderManager.useCustomInterval
+        tempRestDurationMinutes = reminderManager.restDurationMinutes
         tempLanguage = reminderManager.selectedLanguage
     }
     
     private func saveSettings() {
         reminderManager.selectedInterval = tempInterval
-        reminderManager.customMessage = tempMessage
+        // 提醒内容不做国际化：直接存储用户输入；若为空则存固定默认值
+        let trimmed = tempMessage.trimmingCharacters(in: .whitespacesAndNewlines)
+        reminderManager.customMessage = trimmed.isEmpty ? "站立一下" : trimmed
         reminderManager.activeStartTime = tempStartTime
         reminderManager.activeEndTime = tempEndTime
         reminderManager.enableSound = tempEnableSound
         reminderManager.enableActiveTimeLimit = tempEnableActiveTimeLimit
         reminderManager.customIntervalMinutes = tempCustomIntervalMinutes
         reminderManager.useCustomInterval = tempUseCustomInterval
+        reminderManager.restDurationMinutes = tempRestDurationMinutes
         reminderManager.selectedLanguage = tempLanguage
         reminderManager.applyLanguage()
+        reminderManager.persistSettingsAndRescheduleIfNeeded()
     }
 }
 
@@ -249,11 +276,7 @@ struct GlassSettingSection<Content: View>: View {
                 .padding(.leading, 28)
         }
         .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .shadow(color: Color.black.opacity(0.06), radius: 8, x: 0, y: 4)
-        )
+        .glassBackground(cornerRadius: 16)
     }
 }
 
@@ -268,10 +291,7 @@ struct GlassShortcutRow: View {
                 .fontWeight(.semibold)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                )
+                .glassSurface(shadow: false, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
             
             Text(description)
                 .font(.caption)
@@ -286,4 +306,3 @@ struct GlassShortcutRow: View {
     SettingsView()
         .environmentObject(ReminderManager())
 }
-
