@@ -5,7 +5,7 @@
 
 // MARK: - App Title
 "app.title" = "Stand Reminder";
-"app.subtitle" = "Stay healthy, move regularly";
+"app.subtitle" = "Stay focused. Remember to move.";
 
 // MARK: - Status
 "status.active" = "Active";
@@ -36,13 +36,16 @@
 
 // MARK: - Quick Actions
 "quick_action.settings" = "Settings";
-"quick_action.history" = "History";
+"quick_action.history" = "Activity";
 
 // MARK: - Statistics
 "stats.today" = "Today's Stats";
 "stats.reminders" = "Reminders";
 "stats.responses" = "Responses";
 "stats.response_rate" = "Response Rate";
+"stats.rest_time" = "Time moving";
+"stats.rest_sessions" = "Breaks taken";
+"stats.avg_rest" = "Average break";
 
 // MARK: - Settings
 "settings.title" = "Settings";
@@ -51,8 +54,8 @@
 "settings.reminder_interval" = "Reminder Interval";
 "settings.custom_interval" = "Custom interval";
 "settings.select_interval" = "Select Interval";
-"settings.rest_time" = "Rest time";
-"settings.active_hours" = "Active Hours";
+"settings.rest_time" = "Break duration";
+"settings.active_hours" = "Reminder hours";
 "settings.time_limit" = "Time limit";
 "settings.start" = "Start";
 "settings.end" = "End";
@@ -66,14 +69,17 @@
 "settings.shortcut_pause_resume" = "Pause/Resume";
 
 // MARK: - History
-"history.title" = "Usage History";
-"history.this_week" = "This Week";
-"history.this_month" = "This Month";
-"history.this_year" = "This Year";
+"history.title" = "Activity";
+"history.this_week" = "Last 7 days";
+"history.this_month" = "Last month";
+"history.this_year" = "Last 12 months";
 "history.time_period" = "Time Period";
 "history.recent_activity" = "Recent Activity";
 "history.detailed_records" = "Detailed Records";
 "history.activity_trend" = "Activity Trend";
+"history.rest_trend" = "Movement over time";
+"history.rest_records" = "Standing breaks";
+"history.no_records" = "No records yet";
 
 // MARK: - History Actions
 "history.started" = "Started";
@@ -83,19 +89,19 @@
 "history.triggered_reminder" = "Reminder triggered";
 "history.responded_reminder" = "Responded to reminder";
 "history.other_action" = "Other action";
-"history.rested" = "Rested";
+"history.rested" = "Break";
 
 // MARK: - Fullscreen Reminder
 "fullscreen.title" = "Time to Stand Up!";
 "fullscreen.default_message" = "Time to stand up and move around!";
-"fullscreen.rest_countdown" = "Rest: ";
+"fullscreen.rest_countdown" = "Time left to move";
 
 // MARK: - Language Names
 "language.english" = "English";
 "language.chinese_simplified" = "简体中文";
 "language.chinese_traditional" = "繁體中文";
 "language.system" = "System";
-"language.restart_hint" = "Restart app to apply language change";
+"language.restart_hint" = "Applies immediately. Your reminder text stays as written.";
 
 // MARK: - Notifications
 "notification.title" = "Stand Reminder";
@@ -104,3 +110,22 @@
 "menu.open_main" = "Open Main";
 "menu.snooze" = "Snooze";
 "notification.body" = "Time to stand up and move around!";
+
+// Standing reminder interface
+"dashboard.idle_hint" = "A little movement. A better rhythm.";
+"dashboard.active_hint" = "Stay focused. We’ll remind you to move.";
+"dashboard.rest_hint" = "Stand up and make a little room for movement.";
+"dashboard.start_hint" = "Start a fresh countdown at your chosen interval.";
+"timer.ready" = "Your next standing break";
+"timer.every_minutes" = "Every %d min";
+"status.resting" = "Time to move";
+"action.pause_reminder" = "Pause reminders";
+"action.delay_minutes" = "Delay by %d min";
+"menu.delay" = "Delay next reminder";
+"menu.more" = "More options";
+"settings.rhythm" = "Rhythm";
+"settings.reminder" = "Reminders";
+"settings.general" = "General";
+"settings.subtitle" = "Make space for movement in your day";
+"fullscreen.hint" = "Relax your shoulders. Stretch and take a breath.";
+"history.empty_hint" = "Your next standing break will appear here.";

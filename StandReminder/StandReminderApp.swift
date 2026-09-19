@@ -4,8 +4,10 @@ import AVFoundation
 
 @main
 struct StandReminderApp: App {
+    @Environment(\.openWindow) private var openWindow
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var reminderManager = ReminderManager()
+    @State private var hasRequestedNotificationPermission = false
     
     var body: some Scene {
         // 使用 WindowGroup 但设置为不自动显示
@@ -27,28 +29,45 @@ struct StandReminderApp: App {
         .handlesExternalEvents(matching: Set(arrayLiteral: "main"))
         .commands {
             CommandGroup(replacing: CommandGroupPlacement.newItem) {
-                Button("打开主界面") {
-                    // 使用 openWindow 而不是 AppDelegate
-                    // openWindow(id: "main")
+                Button(LocalizationKeys.menuOpenMain.localized) {
+                    openWindow(id: "main")
+                    NSApp.setActivationPolicy(.regular)
+                    NSApp.activate(ignoringOtherApps: true)
                 }
                 .keyboardShortcut("m", modifiers: [.command])
             }
         }
+
+        WindowGroup(id: "settings") {
+            SettingsView().environmentObject(reminderManager)
+        }
+        .windowResizability(.contentSize)
+
+        WindowGroup(id: "history") {
+            HistoryView().environmentObject(reminderManager)
+        }
+        .windowResizability(.contentSize)
         
         MenuBarExtra(content: {
-            // 使用菜单样式的轻量内容，避免出现带标题栏的窗口
-            MenuBarMenuView()
+            MenuBarView()
                 .environmentObject(reminderManager)
                 .id(reminderManager.selectedLanguage)
+                .onAppear {
+                    KeyboardShortcutManager.shared.setReminderManager(reminderManager)
+                    appDelegate.reminderManager = reminderManager
+                    requestNotificationPermission()
+                }
         }, label: {
             // 仅显示图标，避免在菜单栏占用过多空间
             Image(systemName: "figure.stand")
                 .help(LocalizationKeys.appTitle.localized)
         })
-        .menuBarExtraStyle(.menu)
+        .menuBarExtraStyle(.window)
     }
     
     private func requestNotificationPermission() {
+        guard !hasRequestedNotificationPermission else { return }
+        hasRequestedNotificationPermission = true
         Task {
             do {
                 let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])

@@ -5,7 +5,7 @@
 
 // MARK: - App Title
 "app.title" = "站立提醒";
-"app.subtitle" = "保持健康，定時活動";
+"app.subtitle" = "專注工作，記得起身";
 
 // MARK: - Status
 "status.active" = "活動中";
@@ -36,13 +36,16 @@
 
 // MARK: - Quick Actions
 "quick_action.settings" = "設置";
-"quick_action.history" = "歷史";
+"quick_action.history" = "活動記錄";
 
 // MARK: - Statistics
 "stats.today" = "今日統計";
 "stats.reminders" = "提醒";
 "stats.responses" = "響應";
 "stats.response_rate" = "響應率";
+"stats.rest_time" = "活動時長";
+"stats.rest_sessions" = "活動次數";
+"stats.avg_rest" = "平均時長";
 
 // MARK: - Settings
 "settings.title" = "設置";
@@ -51,8 +54,8 @@
 "settings.reminder_interval" = "提醒間隔";
 "settings.custom_interval" = "自定義間隔";
 "settings.select_interval" = "選擇間隔";
-"settings.rest_time" = "休息時間";
-"settings.active_hours" = "活躍時間";
+"settings.rest_time" = "每次活動時長";
+"settings.active_hours" = "提醒時段";
 "settings.time_limit" = "限制時間段";
 "settings.start" = "開始";
 "settings.end" = "結束";
@@ -66,14 +69,17 @@
 "settings.shortcut_pause_resume" = "暫停/恢復";
 
 // MARK: - History
-"history.title" = "使用歷史";
-"history.this_week" = "本週";
-"history.this_month" = "本月";
-"history.this_year" = "本年";
+"history.title" = "活動記錄";
+"history.this_week" = "近 7 天";
+"history.this_month" = "近 1 個月";
+"history.this_year" = "近 12 個月";
 "history.time_period" = "時間段";
 "history.recent_activity" = "最近活動";
 "history.detailed_records" = "詳細記錄";
 "history.activity_trend" = "活動趨勢";
+"history.rest_trend" = "活動趨勢";
+"history.rest_records" = "活動記錄";
+"history.no_records" = "暫無記錄";
 
 // MARK: - History Actions
 "history.started" = "開始";
@@ -83,19 +89,19 @@
 "history.triggered_reminder" = "觸發提醒";
 "history.responded_reminder" = "響應提醒";
 "history.other_action" = "其他操作";
-"history.rested" = "休息";
+"history.rested" = "活動";
 
 // MARK: - Fullscreen Reminder
 "fullscreen.title" = "該起來活動了";
 "fullscreen.default_message" = "該起來活動一下啦！";
-"fullscreen.rest_countdown" = "休息倒計時：";
+"fullscreen.rest_countdown" = "本次活動剩餘";
 
 // MARK: - Language Names
 "language.english" = "English";
 "language.chinese_simplified" = "简体中文";
 "language.chinese_traditional" = "繁體中文";
 "language.system" = "跟隨系統";
-"language.restart_hint" = "重啟應用後生效";
+"language.restart_hint" = "切換後立即生效，提醒內容保持原樣";
 
 // MARK: - Notifications
 "notification.title" = "站立提醒";
@@ -104,3 +110,22 @@
 "menu.open_main" = "打開主界面";
 "menu.snooze" = "稍後提醒";
 "notification.body" = "該起來活動一下啦！";
+
+// Standing reminder interface
+"dashboard.idle_hint" = "定時起身，讓身體輕鬆一點。";
+"dashboard.active_hint" = "專注當下，起身的時間交給我。";
+"dashboard.rest_hint" = "站起來，給身體一點活動的時間。";
+"dashboard.start_hint" = "開啟後，將按設定的節奏提醒你起身。";
+"timer.ready" = "距離下一次起身";
+"timer.every_minutes" = "每 %d 分鐘";
+"status.resting" = "活動時間";
+"action.pause_reminder" = "暫停提醒";
+"action.delay_minutes" = "延後 %d 分鐘";
+"menu.delay" = "延後下次提醒";
+"menu.more" = "更多選項";
+"settings.rhythm" = "提醒節奏";
+"settings.reminder" = "提醒方式";
+"settings.general" = "一般";
+"settings.subtitle" = "找到適合你的工作與活動節奏";
+"fullscreen.hint" = "放鬆肩膀，伸展一下，讓身體慢下來。";
+"history.empty_hint" = "下一次起身活動，會記錄在這裡。";

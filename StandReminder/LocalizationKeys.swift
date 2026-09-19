@@ -6,6 +6,23 @@ enum LocalizationKeys: String {
     // MARK: - App Title
     case appTitle = "app.title"
     case appSubtitle = "app.subtitle"
+    case dashboardIdleHint = "dashboard.idle_hint"
+    case dashboardActiveHint = "dashboard.active_hint"
+    case dashboardRestHint = "dashboard.rest_hint"
+    case dashboardStartHint = "dashboard.start_hint"
+    case timerReady = "timer.ready"
+    case timerEveryMinutes = "timer.every_minutes"
+    case statusResting = "status.resting"
+    case actionPauseReminder = "action.pause_reminder"
+    case actionDelayMinutes = "action.delay_minutes"
+    case menuDelay = "menu.delay"
+    case menuMore = "menu.more"
+    case settingsRhythm = "settings.rhythm"
+    case settingsReminder = "settings.reminder"
+    case settingsGeneral = "settings.general"
+    case settingsSubtitle = "settings.subtitle"
+    case fullscreenHint = "fullscreen.hint"
+    case historyEmptyHint = "history.empty_hint"
     
     // MARK: - Status
     case statusActive = "status.active"
@@ -43,6 +60,9 @@ enum LocalizationKeys: String {
     case statsReminders = "stats.reminders"
     case statsResponses = "stats.responses"
     case statsResponseRate = "stats.response_rate"
+    case statsRestTime = "stats.rest_time"
+    case statsRestSessions = "stats.rest_sessions"
+    case statsAvgRest = "stats.avg_rest"
     
     // MARK: - Settings
     case settingsTitle = "settings.title"
@@ -74,6 +94,9 @@ enum LocalizationKeys: String {
     case historyRecentActivity = "history.recent_activity"
     case historyDetailedRecords = "history.detailed_records"
     case historyActivityTrend = "history.activity_trend"
+    case historyRestTrend = "history.rest_trend"
+    case historyRestRecords = "history.rest_records"
+    case historyNoRecords = "history.no_records"
     
     // MARK: - History Actions
     case historyStarted = "history.started"

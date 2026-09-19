@@ -4,351 +4,254 @@ struct ContentView: View {
     @EnvironmentObject var reminderManager: ReminderManager
     @State private var showingSettings = false
     @State private var showingHistory = false
-    @State private var isInitialized = false
-    
+
     var body: some View {
-        Group {
-            if isInitialized {
-                mainContent
-            } else {
-                loadingView
-            }
-        }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                isInitialized = true
-            }
-        }
-    }
-    
-    private var loadingView: some View {
         ZStack {
-            GradientBackground()
-            VStack {
-                ProgressView()
-                    .scaleEffect(1.5)
-                Text(.timerInitializing)
-                    .font(.headline)
-                    .padding(.top)
+            StandReminderBackground()
+
+            VStack(spacing: 24) {
+                header
+                ReminderTimerPanel()
+                ReminderControls()
+                todaySummary
             }
+            .padding(32)
         }
-        .frame(width: 420, height: 520)
-    }
-    
-    private var mainContent: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                HeaderView()
-                    .environmentObject(reminderManager)
-                
-                TimerView()
-                    .environmentObject(reminderManager)
-                
-                ControlButtonsView()
-                    .environmentObject(reminderManager)
-                
-                QuickActionsView(showingSettings: $showingSettings, showingHistory: $showingHistory)
-                    .environmentObject(reminderManager)
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 20)
-        }
-        .frame(width: 420)
-        .frame(minHeight: 500, maxHeight: 700)
-        .background(GradientBackground())
+        .frame(width: 600, height: 680)
+        .tint(StandReminderTheme.accent)
         .id(reminderManager.selectedLanguage)
         .sheet(isPresented: $showingSettings) {
-            SettingsView()
-                .environmentObject(reminderManager)
+            SettingsView().environmentObject(reminderManager)
         }
         .sheet(isPresented: $showingHistory) {
-            HistoryView()
-                .environmentObject(reminderManager)
+            HistoryView().environmentObject(reminderManager)
         }
     }
-}
 
-// MARK: - 兼容性背景视图
-struct GradientBackground: View {
-    var body: some View {
-        LinearGradient(
-            colors: [
-                Color.blue.opacity(0.15),
-                Color.purple.opacity(0.1),
-                Color.cyan.opacity(0.15)
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+    private var header: some View {
+        HStack(spacing: 12) {
+            StandBrandMark()
+            VStack(alignment: .leading, spacing: 4) {
+                Text(.appTitle)
+                    .font(.system(size: 20, weight: .semibold))
+                Text(.appSubtitle)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button {
+                showingSettings = true
+            } label: {
+                Label(LocalizationKeys.quickActionSettings.localized, systemImage: "slider.horizontal.3")
+            }
+            .buttonStyle(.standSecondary)
+            .keyboardShortcut(",", modifiers: .command)
+        }
+    }
+
+    private var todaySummary: some View {
+        let summary = TodayRestSummary(records: reminderManager.reminderHistory, calendar: .current, now: Date())
+        return VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text(.statsToday)
+                    .font(.system(size: 13, weight: .semibold))
+                Spacer()
+                Button {
+                    showingHistory = true
+                } label: {
+                    HStack(spacing: 5) {
+                        Text(.quickActionHistory)
+                        Image(systemName: "arrow.up.right")
+                    }
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(StandReminderTheme.accent)
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            HStack(spacing: 24) {
+                DashboardMetric(value: "\(summary.restSessions)", label: LocalizationKeys.statsRestSessions.localized)
+                Divider().frame(height: 36)
+                DashboardMetric(value: summary.formattedTotalRest, label: LocalizationKeys.statsRestTime.localized)
+                Spacer(minLength: 0)
+                Image(systemName: "figure.stand")
+                    .font(.system(size: 34, weight: .light))
+                    .foregroundStyle(StandReminderTheme.accent.opacity(0.55))
+                    .accessibilityHidden(true)
+            }
+        }
+        .padding(20)
+        .standSurface()
     }
 }
 
-struct HeaderView: View {
+/// Shared by the main window and the menu bar, including the rest phase.
+struct ReminderTimerPanel: View {
     @EnvironmentObject var reminderManager: ReminderManager
-    
+    var compact = false
+
+    private var isResting: Bool { reminderManager.showingFullscreenReminder }
+
+    private var timerLabel: String {
+        if isResting { return LocalizationKeys.fullscreenRestCountdown.localized }
+        return (reminderManager.isActive ? LocalizationKeys.timerNextReminder : .timerReady).localized
+    }
+
+    private var timerValue: String {
+        let interval = reminderManager.useCustomInterval
+            ? TimeInterval(reminderManager.customIntervalMinutes * 60)
+            : reminderManager.selectedInterval
+        return reminderManager.formatTimeInterval(
+            isResting ? reminderManager.restTimeRemaining
+                : reminderManager.isActive ? reminderManager.timeRemaining : interval
+        )
+    }
+
+    private var subtitle: String {
+        if isResting { return LocalizationKeys.dashboardRestHint.localized }
+        return (reminderManager.isActive ? LocalizationKeys.dashboardActiveHint : .dashboardIdleHint).localized
+    }
+
+    var body: some View {
+        VStack(spacing: compact ? 18 : 24) {
+            HStack {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(reminderManager.isActive ? StandReminderTheme.lime : Color.white.opacity(0.5))
+                        .frame(width: 6, height: 6)
+                    Text((isResting ? LocalizationKeys.statusResting
+                          : reminderManager.isActive ? .statusEnabled : .statusPaused).localized)
+                        .font(.system(size: 12, weight: .medium))
+                }
+                Spacer()
+                Image(systemName: isResting ? "figure.stand" : "arrow.up")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(StandReminderTheme.lime)
+                    .accessibilityHidden(true)
+            }
+
+            VStack(spacing: compact ? 6 : 8) {
+                Text(timerLabel)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.78))
+                Text(timerValue)
+                    .font(.system(size: compact ? 52 : 78, weight: .light, design: .rounded))
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                if !compact {
+                    Text(subtitle)
+                        .font(.system(size: 13))
+                        .foregroundStyle(.white.opacity(0.78))
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityElement(children: .combine)
+
+            HStack(spacing: 16) {
+                Label(intervalText, systemImage: "clock")
+                Spacer(minLength: 0)
+                Label("\(reminderManager.restDurationMinutes) \(LocalizationKeys.timeMinutesFull.localized)",
+                      systemImage: "figure.stand")
+                    .accessibilityLabel("\(LocalizationKeys.settingsRestTime.localized) \(reminderManager.restDurationMinutes) \(LocalizationKeys.timeMinutesFull.localized)")
+            }
+            .font(.system(size: 12))
+            .foregroundStyle(.white.opacity(0.85))
+            .padding(.top, compact ? 12 : 18)
+            .overlay(alignment: .top) {
+                Rectangle().fill(.white.opacity(0.16)).frame(height: 1)
+            }
+        }
+        .foregroundStyle(.white)
+        .padding(compact ? 20 : 28)
+        .background(StandReminderTheme.heroGradient,
+                    in: RoundedRectangle(cornerRadius: compact ? 18 : 24, style: .continuous))
+    }
+
+    private var intervalText: String {
+        let minutes = reminderManager.useCustomInterval
+            ? reminderManager.customIntervalMinutes
+            : Int(reminderManager.selectedInterval / 60)
+        return String(format: LocalizationKeys.timerEveryMinutes.localized, minutes)
+    }
+}
+
+struct ReminderControls: View {
+    @EnvironmentObject var reminderManager: ReminderManager
+    var compact = false
+
+    private var primaryTitle: String {
+        if reminderManager.showingFullscreenReminder { return LocalizationKeys.actionSkipRest.localized }
+        return (reminderManager.isActive ? LocalizationKeys.actionPauseReminder : .actionStartReminder).localized
+    }
+
     var body: some View {
         VStack(spacing: 10) {
-            ZStack {
-                Color.clear
-                    .frame(width: 80, height: 80)
-                    .glassSurface(
-                        shadowColor: .blue.opacity(0.2),
-                        shadowRadius: 10,
-                        shadowY: 0,
-                        in: Circle()
-                    )
-                
-                Image(systemName: "figure.stand")
-                    .font(.system(size: 38, weight: .light))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.cyan, .blue, .purple],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+            Button(action: performPrimaryAction) {
+                Label(primaryTitle, systemImage: reminderManager.showingFullscreenReminder
+                      ? "forward.end.fill" : reminderManager.isActive ? "pause.fill" : "play.fill")
             }
-            
-            Text(.appTitle)
-                .font(.system(size: 26, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.primary, .primary.opacity(0.8)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-            
-            Text(.appSubtitle)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-    }
-}
+            .buttonStyle(.standPrimary())
+            .keyboardShortcut("s", modifiers: .command)
 
-struct TimerView: View {
-    @EnvironmentObject var reminderManager: ReminderManager
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            // 状态指示器
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(reminderManager.isActive ? Color.green : Color.orange)
-                    .frame(width: 8, height: 8)
-                    .shadow(color: reminderManager.isActive ? .green.opacity(0.5) : .orange.opacity(0.5), radius: 4)
-                
-                Text(reminderManager.isActive ? 
-                     LocalizationKeys.statusEnabled.localized :
-                     LocalizationKeys.statusDisabled.localized)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .glassCapsule()
-            
-            // 倒计时
-            if reminderManager.isActive {
-                VStack(spacing: 10) {
-                    Text(.timerNextReminder)
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .textCase(.uppercase)
-                        .tracking(1.5)
-                    
-                    Text(reminderManager.formatTimeInterval(reminderManager.timeRemaining))
-                        .font(.system(size: 52, weight: .semibold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.blue, .cyan],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 24)
-                .glassBackground(cornerRadius: 24)
-            }
-            
-            // 间隔设置
-            HStack(spacing: 6) {
-                Image(systemName: "clock.fill")
-                    .font(.caption)
-                    .foregroundStyle(.cyan)
-                Text(.timerInterval)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(reminderManager.useCustomInterval ? 
-                     "\(reminderManager.customIntervalMinutes)\(LocalizationKeys.timeMinutes.localized)" :
-                     reminderManager.formatIntervalOption(reminderManager.selectedInterval))
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-            }
-        }
-    }
-}
-
-struct ControlButtonsView: View {
-    @EnvironmentObject var reminderManager: ReminderManager
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            // 主按钮
-            Button(action: {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    if reminderManager.isActive {
-                        reminderManager.stopReminder()
-                    } else {
-                        reminderManager.startReminder()
-                    }
-                }
-            }) {
-                HStack(spacing: 10) {
-                    Image(systemName: reminderManager.isActive ? "stop.fill" : "play.fill")
-                        .font(.system(size: 16, weight: .semibold))
-                    Text(reminderManager.isActive ? 
-                         LocalizationKeys.actionStopReminder.localized :
-                         LocalizationKeys.actionStartReminder.localized)
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .foregroundStyle(.white)
-                .background(
-                    LinearGradient(
-                        colors: reminderManager.isActive ? 
-                            [.red, .pink] : [.blue, .cyan],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    ),
-                    in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-                )
-            }
-            .buttonStyle(.plain)
-            .shadow(color: (reminderManager.isActive ? Color.red : Color.blue).opacity(0.4), radius: 12, x: 0, y: 6)
-            
-            // 小憩按钮
-            if reminderManager.isActive {
-                HStack(spacing: 8) {
+            if reminderManager.isActive && !reminderManager.showingFullscreenReminder {
+                Menu {
                     ForEach([5, 10, 15], id: \.self) { minutes in
-                        Button(action: {
+                        Button(String(format: LocalizationKeys.actionDelayMinutes.localized, minutes)) {
                             reminderManager.snoozeReminder(minutes: minutes)
-                        }) {
-                            Text("\(minutes)\(LocalizationKeys.timeMinutes.localized)")
-                                .font(.system(size: 13, weight: .medium))
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 38)
-                                .foregroundStyle(.orange)
-                                .glassSurface(
-                                    interactive: true,
-                                    shadow: false,
-                                    in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                )
                         }
-                        .buttonStyle(.plain)
                     }
+                } label: {
+                    Label(LocalizationKeys.menuDelay.localized, systemImage: "clock.arrow.circlepath")
+                        .font(.system(size: 12, weight: .medium))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 24)
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
+                .menuStyle(.borderlessButton)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(width: compact ? 170 : 190)
+            } else {
+                Text((reminderManager.showingFullscreenReminder
+                      ? LocalizationKeys.dashboardRestHint : .dashboardStartHint).localized)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(height: 24)
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: reminderManager.isActive)
     }
-}
 
-struct QuickActionsView: View {
-    @Binding var showingSettings: Bool
-    @Binding var showingHistory: Bool
-    @EnvironmentObject var reminderManager: ReminderManager
-    
-    var body: some View {
-        VStack(spacing: 14) {
-            // 今日统计
-            let stats = reminderManager.getTodayStats()
-            HStack(spacing: 0) {
-                StatCard(value: "\(stats.reminders)", label: LocalizationKeys.statsReminders.localized, color: .blue)
-                
-                Divider()
-                    .frame(height: 40)
-                    .padding(.horizontal, 8)
-                
-                StatCard(value: "\(stats.responses)", label: LocalizationKeys.statsResponses.localized, color: .green)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .padding(.horizontal, 20)
-            .glassBackground(cornerRadius: 20)
-            
-            // 操作按钮
-            HStack(spacing: 10) {
-                ActionButton(icon: "gearshape.fill", label: LocalizationKeys.quickActionSettings.localized, color: .blue) {
-                    showingSettings = true
-                }
-                
-                ActionButton(icon: "chart.bar.fill", label: LocalizationKeys.quickActionHistory.localized, color: .green) {
-                    showingHistory = true
-                }
-                
-                ActionButton(icon: "power", label: LocalizationKeys.actionQuit.localized, color: .red) {
-                    NSApplication.shared.terminate(nil)
-                }
-            }
+    private func performPrimaryAction() {
+        if reminderManager.showingFullscreenReminder {
+            reminderManager.skipRest()
+        } else if reminderManager.isActive {
+            reminderManager.stopReminder()
+        } else {
+            reminderManager.startReminder()
         }
     }
 }
 
-struct StatCard: View {
+private struct DashboardMetric: View {
     let value: String
     let label: String
-    let color: Color
-    
+
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: 5) {
             Text(value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(color)
+                .font(.system(size: 25, weight: .medium, design: .rounded))
+                .monospacedDigit()
             Text(label)
-                .font(.caption2)
+                .font(.system(size: 12))
                 .foregroundStyle(.secondary)
         }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-struct ActionButton: View {
-    let icon: String
-    let label: String
-    let color: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .symbolRenderingMode(.hierarchical)
-                Text(label)
-                    .font(.caption)
-            }
-            .foregroundStyle(color)
-            .frame(maxWidth: .infinity)
-            .frame(height: 65)
-            .glassSurface(
-                interactive: true,
-                shadow: false,
-                in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-            )
-        }
-        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
     }
 }
 
 #Preview {
-    ContentView()
-        .environmentObject(ReminderManager())
+    ContentView().environmentObject(ReminderManager())
 }

@@ -4,10 +4,10 @@ struct HistoryView: View {
     @EnvironmentObject var reminderManager: ReminderManager
     @Environment(\.dismiss) private var dismiss
     @State private var selectedPeriod: TimePeriod = .week
-    
+
     enum TimePeriod: String, CaseIterable {
         case week, month, year
-        
+
         var localizedName: String {
             switch self {
             case .week: return LocalizationKeys.historyThisWeek.localized
@@ -16,102 +16,99 @@ struct HistoryView: View {
             }
         }
     }
-    
+
     var body: some View {
         ZStack {
-            // 背景
-            LinearGradient(
-                colors: [.green.opacity(0.12), .cyan.opacity(0.08), .blue.opacity(0.12)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
+            StandReminderBackground()
+
             VStack(spacing: 0) {
-                // 标题栏
-                HStack {
-                    Text(LocalizationKeys.historyTitle.localized)
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                    Spacer()
-                    
-                    Button(action: { dismiss() }) {
-                        Text(LocalizationKeys.actionClose.localized)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(
-                                LinearGradient(colors: [.green, .cyan], startPoint: .leading, endPoint: .trailing),
-                                in: Capsule()
-                            )
-                            .foregroundStyle(.white)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 24)
-                .padding(.bottom, 16)
-                // 内容
+                HistoryHeader(closeAction: dismiss.callAsFunction)
+
+                Divider()
+
                 ScrollView {
-                    VStack(spacing: 16) {
-                        // 时间段选择
-                        Picker("", selection: $selectedPeriod) {
+                    VStack(spacing: 18) {
+                        Text(.statsToday)
+                            .font(.system(size: 13, weight: .semibold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        GlassStatsView()
+
+                        Picker(LocalizationKeys.historyTimePeriod.localized, selection: $selectedPeriod) {
                             ForEach(TimePeriod.allCases, id: \.self) { period in
                                 Text(period.localizedName).tag(period)
                             }
-
                         }
                         .pickerStyle(.segmented)
-                        .padding(.horizontal, 20)
-                        
-                        // 统计卡片
-                        GlassStatsView()
+                        .labelsHidden()
+                        .accessibilityLabel(LocalizationKeys.historyTimePeriod.localized)
+
+                        GlassRestTrendView(period: selectedPeriod)
                             .environmentObject(reminderManager)
-                        
-                        // 历史列表
+
                         GlassHistoryListView(period: selectedPeriod)
                             .environmentObject(reminderManager)
                     }
-                    .padding(.vertical, 16)
+                    .padding(28)
                 }
             }
         }
-        .frame(width: 420, height: 580)
+        .frame(width: 600, height: 620)
+        .tint(StandReminderTheme.accent)
+        .id(reminderManager.selectedLanguage)
+    }
+}
+
+private struct HistoryHeader: View {
+    let closeAction: () -> Void
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(LocalizationKeys.historyTitle.localized)
+                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                Text(LocalizationKeys.historyActivityTrend.localized)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button(LocalizationKeys.actionClose.localized, action: closeAction)
+                .buttonStyle(.standSecondary)
+                .keyboardShortcut(.cancelAction)
+        }
+        .padding(28)
     }
 }
 
 struct GlassStatsView: View {
     @EnvironmentObject var reminderManager: ReminderManager
-    
-    private var responseRate: String {
-        let stats = reminderManager.getTodayStats()
-        guard stats.reminders > 0 else { return "0%" }
-        return String(format: "%.0f%%", Double(stats.responses) / Double(stats.reminders) * 100)
+
+    private var todayRestSummary: TodayRestSummary {
+        TodayRestSummary(records: reminderManager.reminderHistory, calendar: .current, now: Date())
     }
-    
+
     var body: some View {
         HStack(spacing: 12) {
             GlassStatCard(
-                value: "\(reminderManager.getTodayStats().reminders)",
-                label: LocalizationKeys.statsReminders.localized,
-                icon: "bell.fill",
-                color: .blue
+                value: todayRestSummary.formattedTotalRest,
+                label: LocalizationKeys.statsRestTime.localized,
+                icon: "figure.walk"
             )
-            
+
             GlassStatCard(
-                value: "\(reminderManager.getTodayStats().responses)",
-                label: LocalizationKeys.statsResponses.localized,
-                icon: "checkmark.circle.fill",
-                color: .green
+                value: "\(todayRestSummary.restSessions)",
+                label: LocalizationKeys.statsRestSessions.localized,
+                icon: "figure.stand"
             )
-            
+
             GlassStatCard(
-                value: responseRate,
-                label: LocalizationKeys.statsResponseRate.localized,
-                icon: "chart.bar.fill",
-                color: .orange
+                value: todayRestSummary.formattedAverageRest,
+                label: LocalizationKeys.statsAvgRest.localized,
+                icon: "timer"
             )
         }
-        .padding(.horizontal, 20)
     }
 }
 
@@ -119,38 +116,37 @@ struct GlassStatCard: View {
     let value: String
     let label: String
     let icon: String
-    let color: Color
-    
+
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 7) {
             Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundStyle(color)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(StandReminderTheme.accent)
                 .symbolRenderingMode(.hierarchical)
-            
+                .frame(width: 30, height: 30)
+                .background(StandReminderTheme.accentSoft, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
             Text(value)
-                .font(.system(size: 22, weight: .bold, design: .rounded))
-                .foregroundStyle(color)
-            
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .foregroundStyle(.primary)
+                .monospacedDigit()
+
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
-        .glassSurface(
-            shadowColor: Color.black.opacity(0.06),
-            shadowRadius: 8,
-            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
-        )
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .standSurface(cornerRadius: 16)
+        .accessibilityElement(children: .combine)
     }
 }
 
 struct GlassHistoryListView: View {
     @EnvironmentObject var reminderManager: ReminderManager
     let period: HistoryView.TimePeriod
-    
+
     private var filteredRecords: [ReminderRecord] {
         let calendar = Calendar.current
         let now = Date()
@@ -161,16 +157,16 @@ struct GlassHistoryListView: View {
             case .year: return calendar.date(byAdding: .year, value: -1, to: now) ?? now
             }
         }()
-        
+
         return reminderManager.reminderHistory
-            .filter { $0.date >= startDate }
+            .filter { $0.responded && $0.date >= startDate }
             .sorted { $0.date > $1.date }
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(LocalizationKeys.historyRecentActivity.localized)
+                Text(LocalizationKeys.historyRestRecords.localized)
                     .font(.system(size: 15, weight: .semibold))
                 Spacer()
                 Text("\(filteredRecords.count)")
@@ -179,66 +175,63 @@ struct GlassHistoryListView: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
-                    .glassCapsule()
+                    .background(Color.primary.opacity(0.06), in: Capsule())
             }
-            .padding(.horizontal, 20)
-            
-            ScrollView {
-                LazyVStack(spacing: 8) {
-                    ForEach(filteredRecords.prefix(15), id: \.id) { record in
+
+                LazyVStack(spacing: 0) {
+                    ForEach(filteredRecords, id: \.id) { record in
                         GlassHistoryRow(record: record)
+                        Divider()
                     }
-                    
+
                     if filteredRecords.isEmpty {
-                        Text("暂无记录")
-                            .font(.subheadline)
-                            .foregroundStyle(.tertiary)
-                            .padding(.vertical, 30)
+                        VStack(spacing: 8) {
+                            Image(systemName: "figure.stand")
+                                .font(.system(size: 32, weight: .light))
+                                .foregroundStyle(StandReminderTheme.accent)
+                            Text(LocalizationKeys.historyNoRecords.localized)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            Text(.historyEmptyHint)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 34)
                     }
                 }
-                .padding(.horizontal, 20)
-            }
-            .frame(maxHeight: 280)
         }
+        .padding(18)
+        .standSurface(cornerRadius: 18)
     }
 }
 
 struct GlassHistoryRow: View {
     let record: ReminderRecord
-    
+
     private var iconName: String {
-        if record.responded { return "bed.double.fill" }
-        if record.started { return "play.circle.fill" }
-        if record.triggered { return "bell.badge.fill" }
-        return "stop.circle.fill"
+        "figure.stand"
     }
-    
+
     private var iconColor: Color {
-        if record.responded { return .orange }
-        if record.started { return .green }
-        if record.triggered { return .blue }
-        return .red
+        StandReminderTheme.accent
     }
-    
+
     private var actionText: String {
-        if record.responded {
-            if let seconds = record.restSecondsUsed {
-                return "\(LocalizationKeys.historyRested.localized) \(formatMMSS(seconds))"
-            }
-            return LocalizationKeys.historyRested.localized
+        if let seconds = record.restSecondsUsed {
+            return "\(LocalizationKeys.historyRested.localized) \(formatMMSS(seconds))"
         }
-        if record.started { return LocalizationKeys.historyStarted.localized }
-        if record.triggered { return LocalizationKeys.historyTriggered.localized }
-        return LocalizationKeys.historyStopped.localized
+        return LocalizationKeys.historyRested.localized
     }
-    
+
     private func formatMMSS(_ totalSeconds: Int) -> String {
         let clamped = max(0, totalSeconds)
         let minutes = clamped / 60
         let seconds = clamped % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-    
+
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: iconName)
@@ -246,26 +239,279 @@ struct GlassHistoryRow: View {
                 .font(.system(size: 14))
                 .symbolRenderingMode(.hierarchical)
                 .frame(width: 20)
-            
+
             Text(actionText)
                 .font(.subheadline)
                 .fontWeight(.medium)
-            
+
             Spacer()
-            
-            Text(DateFormatter.timeFormatter.string(from: record.date))
+
+            Text(record.date, format: .dateTime.month(.abbreviated).day().hour().minute())
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .glassSurface(
-            shadowColor: Color.black.opacity(0.04),
-            shadowRadius: 4,
-            shadowY: 2,
-            in: RoundedRectangle(cornerRadius: 10, style: .continuous)
+        .padding(.vertical, 11)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+struct GlassRestTrendView: View {
+    @EnvironmentObject var reminderManager: ReminderManager
+    let period: HistoryView.TimePeriod
+
+    private var trendPoints: [RestTrendPoint] {
+        RestTrendPoint.build(
+            period: period,
+            records: reminderManager.reminderHistory,
+            calendar: .current,
+            now: Date()
         )
     }
+
+    private var totalRestSeconds: Int {
+        trendPoints.reduce(0) { $0 + $1.restSeconds }
+    }
+
+    private var formattedTotalRest: String {
+        TodayRestSummary.formatHoursMinutes(seconds: totalRestSeconds)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(LocalizationKeys.historyRestTrend.localized)
+                    .font(.system(size: 15, weight: .semibold))
+                Spacer()
+                Text(formattedTotalRest)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.primary.opacity(0.06), in: Capsule())
+            }
+
+            if totalRestSeconds == 0 {
+                Text(.historyNoRecords)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            } else {
+                RestTrendBarChart(points: trendPoints, period: period)
+                    .frame(height: 120)
+            }
+        }
+        .padding(18)
+        .standSurface(cornerRadius: 18)
+    }
+}
+
+struct RestTrendBarChart: View {
+    let points: [RestTrendPoint]
+    let period: HistoryView.TimePeriod
+
+    private var maxMinutes: Double {
+        let maxValue = points.map { $0.restMinutes }.max() ?? 0
+        return max(1, maxValue)
+    }
+
+    var body: some View {
+        VStack(spacing: 8) {
+            GeometryReader { proxy in
+                let availableHeight = max(1, proxy.size.height)
+                HStack(alignment: .bottom, spacing: period == .month ? 2 : 6) {
+                    ForEach(points) { point in
+                        let ratio = point.restMinutes / maxMinutes
+                        let barHeight = max(2, availableHeight * ratio)
+                        Capsule(style: .continuous)
+                            .fill(StandReminderTheme.accent.opacity(point.restSeconds > 0 ? 0.88 : 0.12))
+                            .frame(height: barHeight)
+                            .accessibilityElement()
+                            .accessibilityLabel(point.accessibilityLabel(period: period))
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            }
+
+            HStack {
+                Text(points.first?.xAxisLabel(period: period) ?? "")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                Spacer()
+                Text(points.last?.xAxisLabel(period: period) ?? "")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding(.top, 6)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(LocalizationKeys.historyRestTrend.localized)
+    }
+}
+
+struct TodayRestSummary {
+    let totalRestSeconds: Int
+    let restSessions: Int
+
+    init(records: [ReminderRecord], calendar: Calendar, now: Date) {
+        let startOfDay = calendar.startOfDay(for: now)
+        guard let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: startOfDay) else {
+            self.totalRestSeconds = 0
+            self.restSessions = 0
+            return
+        }
+
+        let todayRestRecords = records.filter { record in
+            record.responded && record.date >= startOfDay && record.date < startOfTomorrow
+        }
+
+        self.restSessions = todayRestRecords.count
+        self.totalRestSeconds = todayRestRecords.compactMap(\.restSecondsUsed).reduce(0, +)
+    }
+
+    var formattedTotalRest: String {
+        Self.formatHoursMinutes(seconds: totalRestSeconds)
+    }
+
+    var formattedAverageRest: String {
+        guard restSessions > 0 else { return "00:00" }
+        let averageSeconds = max(0, totalRestSeconds / restSessions)
+        return Self.formatMMSS(seconds: averageSeconds)
+    }
+
+    static func formatMMSS(seconds totalSeconds: Int) -> String {
+        let clamped = max(0, totalSeconds)
+        let minutes = clamped / 60
+        let seconds = clamped % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+
+    static func formatHoursMinutes(seconds totalSeconds: Int) -> String {
+        let clamped = max(0, totalSeconds)
+        let totalMinutes = clamped / 60
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+
+        if hours > 0 {
+            return "\(hours)\(LocalizationKeys.timeHours.localized) \(minutes)\(LocalizationKeys.timeMinutes.localized)"
+        }
+        return "\(totalMinutes)\(LocalizationKeys.timeMinutes.localized)"
+    }
+}
+
+struct RestTrendPoint: Identifiable {
+    let id: String
+    let date: Date
+    let restSeconds: Int
+
+    var restMinutes: Double {
+        Double(restSeconds) / 60.0
+    }
+
+    func xAxisLabel(period: HistoryView.TimePeriod) -> String {
+        switch period {
+        case .week:
+            return Self.weekdayFormatter.string(from: date)
+        case .month:
+            return Self.monthDayFormatter.string(from: date)
+        case .year:
+            return Self.monthFormatter.string(from: date)
+        }
+    }
+
+    func accessibilityLabel(period: HistoryView.TimePeriod) -> String {
+        let label = xAxisLabel(period: period)
+        let minutesString = String(format: "%.0f", restMinutes)
+        return "\(label): \(minutesString)\(LocalizationKeys.timeMinutesFull.localized)"
+    }
+
+    static func build(period: HistoryView.TimePeriod, records: [ReminderRecord], calendar: Calendar, now: Date) -> [RestTrendPoint] {
+        switch period {
+        case .week:
+            return buildDaily(days: 7, records: records, calendar: calendar, now: now)
+        case .month:
+            let startDate = calendar.date(byAdding: .month, value: -1, to: now) ?? now
+            return buildDaily(from: startDate, to: now, records: records, calendar: calendar)
+        case .year:
+            return buildMonthly(months: 12, records: records, calendar: calendar, now: now)
+        }
+    }
+
+    private static func buildDaily(days: Int, records: [ReminderRecord], calendar: Calendar, now: Date) -> [RestTrendPoint] {
+        let clampedDays = max(1, days)
+        let endDate = calendar.startOfDay(for: now)
+        let startDate = calendar.date(byAdding: .day, value: -(clampedDays - 1), to: endDate) ?? endDate
+        return buildDaily(from: startDate, to: endDate, records: records, calendar: calendar)
+    }
+
+    private static func buildDaily(from startDate: Date, to endDate: Date, records: [ReminderRecord], calendar: Calendar) -> [RestTrendPoint] {
+        let startDay = calendar.startOfDay(for: startDate)
+        let endDay = calendar.startOfDay(for: endDate)
+
+        var points: [RestTrendPoint] = []
+        var currentDay = startDay
+
+        while currentDay <= endDay {
+            guard let nextDay = calendar.date(byAdding: .day, value: 1, to: currentDay) else { break }
+
+            let restSeconds = records
+                .filter { record in
+                    record.responded && record.date >= currentDay && record.date < nextDay
+                }
+                .compactMap(\.restSecondsUsed)
+                .reduce(0, +)
+
+            let id = String(Int(currentDay.timeIntervalSince1970))
+            points.append(RestTrendPoint(id: id, date: currentDay, restSeconds: restSeconds))
+            currentDay = nextDay
+        }
+
+        return points
+    }
+
+    private static func buildMonthly(months: Int, records: [ReminderRecord], calendar: Calendar, now: Date) -> [RestTrendPoint] {
+        let clampedMonths = max(1, months)
+        guard let startOfCurrentMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) else {
+            return []
+        }
+
+        var points: [RestTrendPoint] = []
+        for offset in stride(from: clampedMonths - 1, through: 0, by: -1) {
+            guard let monthStart = calendar.date(byAdding: .month, value: -offset, to: startOfCurrentMonth) else { continue }
+            guard let nextMonthStart = calendar.date(byAdding: .month, value: 1, to: monthStart) else { continue }
+
+            let restSeconds = records
+                .filter { record in
+                    record.responded && record.date >= monthStart && record.date < nextMonthStart
+                }
+                .compactMap(\.restSecondsUsed)
+                .reduce(0, +)
+
+            let id = String(Int(monthStart.timeIntervalSince1970))
+            points.append(RestTrendPoint(id: id, date: monthStart, restSeconds: restSeconds))
+        }
+
+        return points
+    }
+
+    private static let weekdayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("EEE")
+        return formatter
+    }()
+
+    private static let monthDayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("Md")
+        return formatter
+    }()
+
+    private static let monthFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("MMM")
+        return formatter
+    }()
 }
 
 extension DateFormatter {
